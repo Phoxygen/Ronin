@@ -1,0 +1,9 @@
+. "$topsrcdir/b2g/config/mozconfigs/common"
+
+mk_add_options MOZ_DEVTOOLS=all
+
+ac_add_options --enable-application=b2g
+ac_add_options --disable-libjpeg-turbo
+
+# This option is required if you want to be able to run Gaia's tests
+ac_add_options --enable-tests
