@@ -12,6 +12,8 @@ GECKO_VERSION?=46
 CUSTOM_MOZCONFIG?=
 RESOLUTION?=800x600
 B2G_PROFILE_PATH?=${HOME}/.mozilla/b2g/xsession.profile
+XKB_LAYOUT?=$(strip $(shell setxkbmap -query|grep layout|cut -d: -f2))
+XKB_VARIANT?=$(strip $(shell setxkbmap -query|grep variant|cut -d: -f2))
 ######
 
 ##### Git repo validity check
@@ -132,9 +134,11 @@ ${B2G_PROFILE_PATH}:
 # gaia profile there
 run: ${BUILD_DIR}/.runtime_deps_ready ${BUILD_DIR}/gecko/dist/b2g ${B2G_PROFILE_PATH} ${BUILD_DIR}/gaia/profile
 	cp -aT ${BUILD_DIR}/gaia/profile ${B2G_PROFILE_PATH}
-	cd ${BUILD_DIR}/gecko/dist/b2g/ && \
-	startx ./b2g -no-remote -profile ${B2G_PROFILE_PATH} --screen ${RESOLUTION} -- /usr/bin/Xephyr \
-		-title "RoninOS" -ac -br -noreset -screen ${RESOLUTION}
+	(/usr/bin/Xephyr -title "Ronin OS" -ac -br -noreset -screen ${RESOLUTION} -displayfd 5 5>&1 2>/dev/null) | while read D; do \
+		DISPLAY=:$$D setxkbmap -layout ${XKB_LAYOUT} -variant ${XKB_VARIANT} && \
+	    cd ${BUILD_DIR}/gecko/dist/b2g/ && \
+		DISPLAY=:$$D ./b2g -no-remote -profile ${B2G_PROFILE_PATH} --screen=${RESOLUTION}; \
+	done
 	
 ${BUILD_DIR}/gaia/profile.tar.bz2: ${BUILD_DIR}/gaia/profile
 	cd ${BUILD_DIR} && \
