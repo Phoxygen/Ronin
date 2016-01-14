@@ -2,6 +2,8 @@ Source: Fox-DE
 Package: Fox-DE
 Version: 46.0a1-DATETIME
 Maintainer: Phoxygen
+Depends: lsb-release, libasound2 (>= 1.0.16), libatk1.0-0 (>= 1.12.4), libc6 (>= 2.17), libcairo2 (>= 1.2.4), libdbus-1-3 (>= 1.9.14), libdbus-glib-1-2 (>= 0.78), libfontconfig1 (>= 2.9.0), libfreetype6 (>= 2.2.1), libgcc1 (>= 1:4.1.1), libgdk-pixbuf2.0-0 (>= 2.22.0), libglib2.0-0 (>= 2.31.8), libgtk2.0-0 (>= 2.24.0), libpango-1.0-0 (>= 1.22.0), libpangocairo-1.0-0 (>= 1.14.0), libstartup-notification0 (>= 0.8), libstdc++6 (>= 5.2), libx11-6, libxcomposite1 (>= 1:0.3-1), libxdamage1 (>= 1:1.1), libxext6, libxfixes3, libxrender1, libxt6
+Recommends: systemd
 Homepage: https://github.com/Phoxygen/b2gian
 Architecture: amd64
 Description: Boot 2 Gecko which is the technical name of Firefox OS (http://www.mozilla.org/en-US/firefox/os/) is a web based operating system .The project’s architecture eliminates the need for apps to be
