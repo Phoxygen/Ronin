@@ -6,6 +6,7 @@ mkfile_dir := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 BUILD_DIR?=$(abspath ${mkfile_dir}/build)
 GECKO_SOURCE_DIR?=$(abspath ${mkfile_dir}/gecko-dev)
 GAIA_SOURCE_DIR?=$(abspath ${mkfile_dir}/gaia)
+WETTY_SOURCE_DIR?=$(abspath ${mkfile_dir}/wetty)
 # Used to increment .deb package version
 DATETIME?=$(shell date +%d%m%y%H%M)
 GECKO_VERSION?=46
@@ -14,6 +15,8 @@ RESOLUTION?=800x600
 B2G_PROFILE_PATH?=${HOME}/.mozilla/b2g/xsession.profile
 XKB_LAYOUT?=$(strip $(shell setxkbmap -query|grep layout|cut -d: -f2))
 XKB_VARIANT?=$(strip $(shell setxkbmap -query|grep variant|cut -d: -f2))
+PACKAGE_VERSION?=${GECKO_VERSION}.${DATETIME}
+PACKAGE_DIR?=${BUILD_DIR}/package/ronin-${PACKAGE_VERSION}
 ######
 
 ##### Git repo validity check
@@ -58,7 +61,7 @@ ${BUILD_DIR}/.build_deps_ready: ${BUILD_DIR}
 	python ${mkfile_dir}/bootstrap.py --application-choice desktop
 	sudo apt-get install libgstreamer-plugins-bad1.0-dev \
 		libgstreamer-plugins-base0.10-dev libgstreamer-plugins-base1.0-dev \
-		libgstreamer1.0-dev
+		libgstreamer1.0-dev dh-make devscripts dh-systemd
 	touch ${BUILD_DIR}/.build_deps_ready
 
 ##### Install runtime dependencies
@@ -88,7 +91,15 @@ gaia-sources: ${GAIA_SOURCE_DIR}
 		exit 1; \
 	fi
 
-sources: gecko-sources gaia-sources
+${WETTY_SOURCE_DIR}:
+	git clone https://github.com/Phoxygen/wetty
+
+wetty-sources: ${WETTY_SOURCE_DIR}
+
+sources: gecko-sources gaia-sources wetty-sources
+
+build-wetty: ${WETTY_SOURCE_DIR}
+	cd ${WETTY_SOURCE_DIR} && npm install
 
 ##### Build gaia profile
 # (The built profile lives in ${BUILD_DIR}/profile)
@@ -120,7 +131,7 @@ ${BUILD_DIR}/gecko/dist/b2g:
 	$(MAKE) build-gecko
 
 ###### Build meta-goal
-build: ${BUILD_DIR}/.build_deps_ready sources build-gaia build-gecko
+build: ${BUILD_DIR}/.build_deps_ready sources build-gaia build-gecko build-wetty
 
 ${B2G_PROFILE_PATH}:
 	mkdir -p ${B2G_PROFILE_PATH}
@@ -138,28 +149,53 @@ run: ${BUILD_DIR}/.runtime_deps_ready ${BUILD_DIR}/gecko/dist/b2g ${B2G_PROFILE_
 	startx ./b2g -no-remote -profile ${B2G_PROFILE_PATH} --screen ${RESOLUTION} -- /usr/bin/Xephyr \
         -title "RoninOS" -ac -br -noreset -screen ${RESOLUTION} \
                 -keybd ephyr,xkbmodel=evdev,xkblayout=${XKB_LAYOUT},xkbvariant=${XKB_VARIANT}
-	done
 	
 ${BUILD_DIR}/gaia/profile.tar.bz2: ${BUILD_DIR}/gaia/profile
 	cd ${BUILD_DIR} && \
 	tar --directory gaia/profile -cjf  ${BUILD_DIR}/gaia/profile.tar.bz2 `ls gaia/profile`
 		
+
+clean-package:
+	if [ -d ${BUILD_DIR}/package ]; then rm -rf ${BUILD_DIR}/package; fi
+
 ###### Build deb package
 # We need gaia profile, gecko build and a few scripts
-package: build ${BUILD_DIR}/gaia/profile.tar.bz2
-	if [ ! -d ${BUILD_DIR}/package/opt/b2g ]; then mkdir -p ${BUILD_DIR}/package/opt/b2g; fi
-	if [ ! -d ${BUILD_DIR}/package/DEBIAN ]; then mkdir -p ${BUILD_DIR}/package/DEBIAN; fi
-	if [ ! -d ${BUILD_DIR}/package/usr/share/xsessions ]; then mkdir -p ${BUILD_DIR}/package/usr/share/xsessions; fi
+package: clean-package ${BUILD_DIR}/gaia/profile.tar.bz2 ${BUILD_DIR}/gecko/dist/b2g
+	if [ ! -d ${PACKAGE_DIR} ]; then mkdir -p ${PACKAGE_DIR}; fi
+	if [ ! -d ${PACKAGE_DIR}/wetty ]; then mkdir -p ${PACKAGE_DIR}/wetty; fi
+	
+	# Prepare package dir
+	tar --directory ${PACKAGE_DIR} -xjf ${BUILD_DIR}/gecko/dist/b2g-${GECKO_VERSION}.0a1.en-US.linux-x86_64.tar.bz2
+	cp ${BUILD_DIR}/gaia/profile.tar.bz2 ${PACKAGE_DIR} 
+	cp ${mkfile_dir}/launch.sh ${PACKAGE_DIR}
+	cp ${mkfile_dir}/session.sh ${PACKAGE_DIR}
+	cp ${mkfile_dir}/ronin.desktop ${PACKAGE_DIR}
 
-	cp ${BUILD_DIR}/gaia/profile.tar.bz2 ${BUILD_DIR}/package/opt/b2g/ 
-	tar --directory ${BUILD_DIR}/package/opt/b2g -xjf ${BUILD_DIR}/gecko/dist/b2g-${GECKO_VERSION}.0a1.en-US.linux-x86_64.tar.bz2
-	cp ${mkfile_dir}/launch.sh ${BUILD_DIR}/package/opt/b2g/
-	cp ${mkfile_dir}/session.sh ${BUILD_DIR}/package/opt/b2g/
-	cp ${mkfile_dir}/b2g.desktop ${BUILD_DIR}/package/usr/share/xsessions/
-	sed 's/DATETIME/${DATETIME}/' ${mkfile_dir}/control > ${BUILD_DIR}/package/DEBIAN/control
-	cd ${BUILD_DIR} && \
-	fakeroot dpkg-checkbuilddeps package/DEBIAN/control && \
-	fakeroot dpkg-deb -b package b2g_${GECKO_VERSION}.0a1-${DATETIME}_amd64.deb
+	cd ${WETTY_SOURCE_DIR} && cp -r app.js package.json public ${PACKAGE_DIR}/wetty
+
+	# Generate ${PACKAGE_DIR}/debian folder
+	cd ${PACKAGE_DIR} && dh_make -n -s -y -e tech@phoxygen.com
+
+	# Add systemd file. Unit names must match package name
+	# so use ronin.* for now
+	cd ${WETTY_SOURCE_DIR}/systemd && \
+		cp wetty.service ${PACKAGE_DIR}/debian/ronin.service && \
+		cp wetty.socket ${PACKAGE_DIR}/debian/ronin.socket
+	cd ${WETTY_SOURCE_DIR}/upstart && \
+		cp wetty.conf ${PACKAGE_DIR}/debian/ronin.upstart
+
+	# Fixup generated debian folder
+	cp ${mkfile_dir}/debian/install ${PACKAGE_DIR}/debian
+	cp ${mkfile_dir}/debian/postinst ${PACKAGE_DIR}/debian
+	cp ${mkfile_dir}/debian/prerm ${PACKAGE_DIR}/debian
+	sed -i '/^Build-Depends:/ s/$$/, dh-systemd/' ${PACKAGE_DIR}/debian/control
+	# sed -i '/^Depends:/ s/$$/, nodejs, npm/' ${PACKAGE_DIR}/debian/control
+	head -n -2  ${PACKAGE_DIR}/debian/control | tee ${PACKAGE_DIR}/debian/control
+	sed -i '/^\tdh/ s/$$/--with=systemd/' ${PACKAGE_DIR}/debian/rules
+	cat ${mkfile_dir}/debian/control >> ${PACKAGE_DIR}/debian/control
+
+	# Build package
+	cd ${PACKAGE_DIR} && debuild -us -uc -b
 
 clean:
 	if [ -d ${BUILD_DIR} ]; then rm -rfI ${BUILD_DIR}; fi

@@ -1,0 +1,6 @@
+b2g/* /opt/b2g/b2g/
+wetty/* /opt/b2g/wetty/
+ronin.desktop /usr/share/xsessions/
+launch.sh /opt/b2g/
+session.sh /opt/b2g/
+profile.tar.bz2 /opt/b2g/
