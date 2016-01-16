@@ -1,0 +1,21 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+Vagrant.configure(2) do |config|
+  config.vm.define "ronin" do |box|
+    box.vm.box = "ronin"
+
+  end
+  config.ssh.username = "ronin"
+  config.ssh.forward_agent = "true"
+  config.ssh.forward_x11 = "true"
+  config.ssh.private_key_path = ".ssh/id_rsa"
+     vb.customize ["modifyvm", :id, "--vram", "64"]
+     vb.customize ["modifyvm", :id, "--accelerate3d", "on"]
+     vb.customize ["modifyvm", :id, "--accelerate2dvideo", "on"]
+     #   # Display the VirtualBox GUI when booting the machine
+     vb.gui = true
+  # Customize the amount of memory on the VM:
+     vb.memory = "1048"
+     vb.cpus = "2"
+   end
+end
