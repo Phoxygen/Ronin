@@ -2,6 +2,7 @@
 
 # Make sure Udev doesn't block our network
 # http://6.ptmc.org/?p=164
+USER=ronin
 echo "cleaning up udev rules"
 rm -rf /dev/.udev/
 rm /lib/udev/rules.d/75-persistent-net-generator.rules
@@ -27,7 +28,7 @@ DISK_USAGE_BEFORE_CLEANUP=$(df -h)
 # Remove Bash history
 unset HISTFILE
 rm -f /root/.bash_history
-rm -f /home/vagrant/.bash_history
+rm -f /home/$USER/.bash_history
 
 # Clean up log files
 find /var/log -type f | while read f; do echo -ne '' > $f; done;

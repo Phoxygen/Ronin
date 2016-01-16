@@ -3,16 +3,12 @@
     {
       "type": "shell",
       "execute_command": "echo 'ronin'|sudo -S sh '{{.Path}}'",
-      "headless": "true",
       "override": {
         "virtualbox-iso": {
           "scripts": [
             "scripts/base.sh",
-            "scripts/vagrant.sh",
-            "scripts/virtualbox.sh",
-            "scripts/minimize.sh",
-            "scripts/cleanup.sh",
-            "scripts/zerodisk.sh"
+            "scripts/virtualboxguest.sh",
+            "scripts/cleanup.sh"
           ]
         }
        }
@@ -31,6 +27,7 @@
   "builders": [
     {
       "type": "virtualbox-iso",
+      "headless": "true",
       "boot_command": [
         "<esc><wait>",
         "<esc><wait>",
@@ -54,7 +51,7 @@
         " -- <wait>",
         "<enter><wait>"
       ],
-      "boot_wait": "10s",
+      "boot_wait": "5s",
       "disk_size": 40960,
       "guest_os_type": "Ubuntu_64",
       "http_directory": "http",
@@ -67,8 +64,8 @@
       "ssh_wait_timeout": "10000s",
       "shutdown_command": "echo 'shutdown -P now' > /tmp/shutdown.sh; echo 'ronin'|sudo -S sh '/tmp/shutdown.sh'",
       "vboxmanage": [
-        [ "modifyvm", "{{.Name}}", "--memory", "512" ],
-        [ "modifyvm", "{{.Name}}", "--cpus", "1" ]
+        [ "modifyvm", "{{.Name}}", "--memory", "2048" ],
+        [ "modifyvm", "{{.Name}}", "--cpus", "2" ]
       ]
     }
   ]
