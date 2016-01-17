@@ -9,7 +9,11 @@ It's [FirefoxOS](https://www.mozilla.org/fr/firefox/os/2.0) for desktop: an OS b
 Sounds great, can I try it?
 -----------------------
 
-We will soon build a ready to use iso file so that everyone can test it.
+You can test our vagrant box directly by adding our Phoxygen/ronin box. Clone our repo and in the toools/vagrant directory just do:
+```
+$ vagrant box add https://s3.eu-central-1.amazonaws.com/ronin-os/ronin.box -name=Phoxygen/ronin
+$ vagrant up
+```
 
 But if you have a Debian/Ubuntu based distribution you can play with it already. 
 
