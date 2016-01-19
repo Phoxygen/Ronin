@@ -1,0 +1,7 @@
+*~
+.vagrant
+*#*
+*.deb
+packer_cache
+*.box
+output-virtualbox-iso
