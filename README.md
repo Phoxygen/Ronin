@@ -25,7 +25,7 @@ apt-get install ronin wetty
 
 or you can:
 
-* Download a .deb package: http://dl.phoxygen.com/ronin-os-latest.deb and http://dl.phoxygen.com/wetty-latest.deb
+* Download a .deb package: http://dl.phoxygen.com/ronin-latest.deb and http://dl.phoxygen.com/wetty-latest.deb
 * Before installing make sure you have `nodejs` and `npm` packages installed, and a symlink from `/usr/bin/node` to `/usr/bin/nodejs`
 * `dpkg -i ronin-os-latest.deb` (followed by `apt-get install -f` if it complains about missing dependencies)
 * You can then launch it in a windowed mode using:
