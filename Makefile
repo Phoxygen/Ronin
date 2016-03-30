@@ -59,7 +59,7 @@ ${BUILD_DIR}:
 
 ##### Install build dependencies
 ${BUILD_DIR}/.build_deps_ready: ${BUILD_DIR}
-	python ${mkfile_dir}/bootstrap.py --application-choice desktop
+	python ${mkfile_dir}/bootstrap.py --application-choice browser
 	sudo apt-get install libgstreamer-plugins-bad1.0-dev \
 		libgstreamer-plugins-base0.10-dev libgstreamer-plugins-base1.0-dev \
 		libgstreamer1.0-dev dh-make devscripts dh-systemd
