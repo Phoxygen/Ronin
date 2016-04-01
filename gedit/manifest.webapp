@@ -1,0 +1,18 @@
+{
+  "name": "gedit",
+  "description": "Official text editor of the GNOME desktop environment",
+  "launch_path": "/",
+  "icons": {
+    "128": "/gedit-logo-128x128.png",
+    "32": "/gedit.ico"
+  },
+  "installs_allowed_from": [
+    "*"
+  ],
+  "developer": {
+    "name": "The Gnome team",
+    "url": "https://wiki.gnome.org/Apps/Gedit"
+  },
+  "default_locale": "en",
+  "version": "3.10.4"
+}
