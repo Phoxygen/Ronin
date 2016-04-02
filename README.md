@@ -13,7 +13,19 @@ We will soon build a ready to use iso file so that everyone can test it.
 
 But if you have a Debian/Ubuntu based distribution you can play with it already. 
 
-* Download a .deb package: https://s3.eu-central-1.amazonaws.com/ronin-os/ronin-os-latest.deb
+add to your sources.list:
+
+```
+deb http://sumo.phoxygen.com trusty main
+```
+then
+```
+apt-get install ronin wetty
+```
+
+or you can:
+
+* Download a .deb package: http://dl.phoxygen.com/ronin-latest.deb and http://dl.phoxygen.com/wetty-latest.deb
 * Before installing make sure you have `nodejs` and `npm` packages installed, and a symlink from `/usr/bin/node` to `/usr/bin/nodejs`
 * `dpkg -i ronin-os-latest.deb` (followed by `apt-get install -f` if it complains about missing dependencies)
 * You can then launch it in a windowed mode using:
